@@ -1,27 +1,38 @@
-# .github/workflows/deploy-qa-rshiny_1.yml
+# .github/actions/deploy-scaly-app/action.yml
 
-name: deploy-qa-rshiny_1
-# Refer to https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on
-# to customize what events should trigger an application deployment
-on:
-  push:
-    branches:
-      - 'main'
-jobs:
-  deploy:
-    permissions:
-      id-token: write
-      contents: read
-    name: Zip and Upload Scaly App
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v2
-      - name: Zip and Deploy to Scaly
-        uses: ./.github/actions/deploy-scaly-app
-        with:
-          scaly-account-id: b3a8adae-e146-4a8f-a718-bffdfbb81b98
-          scaly-app-name: rshiny_1
-          source-directory: './' # change to root of application code
-          scaly-env: '-qa'
-          scaly-env-id: '727125169629'
+name: 'Deploy Scaly App'
+description: 'Package and deploy an app to Scaly'
+inputs:
+  scaly-account-id:
+    description: 'Your Scaly account id where your app is defined'
+    required: true
+  scaly-app-name:
+    description: 'The name of your scaly app'
+    required: true
+  source-directory:
+    description: 'Root path where the scaly app is located'
+    required: true
+    default: './'
+  scaly-env:
+    description: 'Scaly Environment'
+    required: false
+    default: ''
+  scaly-env-id:
+    description: 'Scaly Environment ID'
+    required: false
+    default: 'xxxxxxxxxxxx'
+runs:
+  using: 'composite'
+  steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: ca-central-1
+        role-to-assume: arn:aws:iam::${{ inputs.scaly-env-id }}:role/scaly-s3-upload-${{ inputs.scaly-account-id }}
+    - name: Zip and Upload Scaly App
+      shell: bash
+      working-directory: ${{ inputs.source-directory }}
+      run: |
+        zip -r "${{ runner.temp }}/app.zip" *
+        aws s3 cp "${{ runner.temp }}/app.zip" "s3://scalyapps-files${{ inputs.scaly-env }}/deploy/${{ inputs.scaly-account-id }}/${{ inputs.scaly-app-name }}/${{ inputs.scaly-app-name }}-${GITHUB_REF_NAME}-${GITHUB_SHA}.zip"
+  
