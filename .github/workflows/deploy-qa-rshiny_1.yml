@@ -1,6 +1,6 @@
-# .github/workflows/deploy-qa-rshiny_1.yml
+# .github/workflows/deploy-qa-scaly_rshiny_1.yml
 
-name: deploy-qa-rshiny_1
+name: deploy-qa-scaly_rshiny_1
 # Refer to https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on
 # to customize what events should trigger an application deployment
 on:
@@ -20,8 +20,8 @@ jobs:
       - name: Zip and Deploy to Scaly
         uses: ./.github/actions/deploy-scaly-app
         with:
-          scaly-account-id: b3a8adae-e146-4a8f-a718-bffdfbb81b98
-          scaly-app-name: rshiny_1
+          scaly-account-id: 745e4735-fc1a-49e0-a20b-4c98494c6e73
+          scaly-app-name: scaly_rshiny_1
           source-directory: './' # change to root of application code
           scaly-env: '-qa'
           scaly-env-id: '727125169629'
